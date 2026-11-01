@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClearWorks — Digital Services</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Georgia, 'Times New Roman', serif; background: #f6f4ef; color: #1d1d1b; line-height: 1.6; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 40px 20px; }
+  h1 { font-size: 2rem; margin-bottom: .3em; }
+  .tag { color: #6b6b66; margin-bottom: 2rem; }
+  .card { background: #fff; border: 1px solid #e2ded4; border-radius: 10px; padding: 24px; margin-bottom: 1.2rem; }
+  h2 { font-size: 1.15rem; margin-bottom: .8rem; }
+  label { display: block; font-size: .85rem; margin: .8rem 0 .25rem; color: #444; }
+  input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc7ba; border-radius: 6px; font: inherit; background: #fff; }
+  textarea { min-height: 110px; }
+  button { margin-top: 1.2rem; background: #1d6f5c; color: #fff; border: 0; padding: 12px 28px; border-radius: 6px; font: inherit; cursor: pointer; }
+  button:disabled { opacity: .6; }
+  .msg { margin-top: 1rem; padding: 12px; border-radius: 6px; display: none; }
+  .ok { background: #e2f2ec; color: #135e4c; display: block; }
+  .err { background: #fbe9e7; color: #8c2b1d; display: block; }
+  .svc { font-size: .9rem; color: #555; }
+  .price { float: right; font-weight: bold; color: #1d6f5c; }
+  footer { margin-top: 3rem; font-size: .8rem; color: #9a968c; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ClearWorks</h1>
+  <p class="tag">Data work done fast — scraping, cleaning, extraction, AI automation.</p>
+
+  <div class="card">
+    <h2>Services</h2>
+    <p class="svc">Data Cleaning <span class="price">$10–15/batch</span></p>
+    <p class="svc">Tracking Number Extraction <span class="price">$10–15/batch</span></p>
+    <p class="svc">Web Scraping &amp; Research <span class="price">$5+</span></p>
+    <p class="svc">AI Automation &amp; Prompt Packs <span class="price">from Rp 29.000</span></p>
+  </div>
+
+  <div class="card">
+    <h2>Order</h2>
+    <form id="orderForm">
+      <label for="name">Your name</label>
+      <input id="name" name="name" required>
+      <label for="email">Email (for delivery)</label>
+      <input id="email" name="email" type="email" required>
+      <label for="service">Service</label>
+      <select id="service" name="service" required>
+        <option value="Data Cleaning ($10–15 / batch)">Data Cleaning — $10–15/batch</option>
+        <option value="Tracking Number Extraction ($10–15 / batch)">Tracking Number Extraction — $10–15/batch</option>
+        <option value="Web Scraping & Research ($5)">Web Scraping &amp; Research — $5+</option>
+        <option value="Jualan Pakai AI — Prompt Pack Rp 29.000">AI Prompt Pack — Rp 29.000</option>
+      </select>
+      <label for="brief">Brief — describe your data / task</label>
+      <textarea id="brief" name="brief" required placeholder="Contoh: 500 baris data Excel, perlu dirapikan dan dedup..."></textarea>
+      <button type="submit" id="submitBtn">Submit Order</button>
+      <div id="msg" class="msg"></div>
+    </form>
+  </div>
+
+  <footer>ClearWorks · digital data services · response within 24h</footer>
+</div>
+<script>
+document.getElementById('orderForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  const msg = document.getElementById('msg');
+  btn.disabled = true; btn.textContent = 'Sending...';
+  msg.className = 'msg'; msg.style.display = 'none';
+  const rel = '__LIGHTVELA_RELEASE_ID__';
+  try {
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Website-Release': rel },
+      body: JSON.stringify({
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        service: document.getElementById('service').value,
+        brief: document.getElementById('brief').value
+      })
+    });
+    const d = await res.json();
+    if (res.ok && d.ok) {
+      msg.textContent = 'Order received! Your reference: ' + d.reference + '. We will reply to your email within 24 hours.';
+      msg.className = 'msg ok';
+      e.target.reset();
+    } else {
+      msg.textContent = 'Save failed: ' + (d.error || res.status) + '. Please try again.';
+      msg.className = 'msg err';
+    }
+  } catch (err) {
+    msg.textContent = 'Network error, please try again.';
+    msg.className = 'msg err';
+  }
+  btn.disabled = false; btn.textContent = 'Submit Order';
+});
+</script>
+</body>
+</html>
